@@ -105,23 +105,33 @@ int main( int argc, char *argv[] )
 
 	// Compute the Mandelbrot image
 	int q = 0;
-	pthread_t *array = (pthread_t *)malloc(sizeof(pthread_t)*numThreads);
-	for (q = 0; q < numThreads; q++) {
-	    info *thread_args = (info *)malloc(sizeof(info));
-	    thread_args->ibm = bm;
-	    thread_args->ixmin = xcenter-scale;
-	    thread_args->ixmax = xcenter+scale;
-	    thread_args->iymin = ycenter-scale;
-	    thread_args->iymax = ycenter+scale;
-	    thread_args->imax = max;
-	    thread_args->iq = q;
-	    thread_args->numThreads = numThreads;
-	    pthread_create(&array[q], NULL, compute_image, thread_args);
-	}
-	for (q = 0; q < numThreads; q++) {
-	    pthread_join(array[q], NULL);
-	}
-	// compute_image(bm,xcenter-scale,xcenter+scale,ycenter-scale,ycenter+scale,max);
+	
+		// Allocate memory required for threads
+		pthread_t *array = (pthread_t *)malloc(sizeof(pthread_t)*numThreads);
+	
+		// Begin thread creation
+		for (q = 0; q < numThreads; q++) {
+				// Make sure each thread uses separate base data
+		    info *thread_args = (info *)malloc(sizeof(info));
+		    
+		    // Populate struct with correct parameters
+		    thread_args->ibm = bm;
+		    thread_args->ixmin = xcenter-scale;
+		    thread_args->ixmax = xcenter+scale;
+		    thread_args->iymin = ycenter-scale;
+		    thread_args->iymax = ycenter+scale;
+		    thread_args->imax = max;
+		    thread_args->iq = q;
+		    thread_args->numThreads = numThreads;
+		    
+		    // Create thread with provided info
+		    pthread_create(&array[q], NULL, compute_image, thread_args);
+		}
+		
+		// Join all the threads together
+		for (q = 0; q < numThreads; q++) {
+		    pthread_join(array[q], NULL);
+		}
 
 	// Save the image in the stated file.
 	if(!bitmap_save(bm,outfile)) {
@@ -144,9 +154,9 @@ void * compute_image( void *args )
 
 	int width = bitmap_width(thread_args->ibm);
 	int height = bitmap_height(thread_args->ibm);
-
+	int temp = height/(thread_args->numThreads); //	Decide how work will be split among threads
+	
 	// For every pixel in the image...
-	int temp = height/(thread_args->numThreads);
 	for(j=temp*(thread_args->iq);j<temp*(thread_args->iq+1) && j <= height; j++) {
 		for(i=0;i<width;i++) {
 

@@ -10,7 +10,7 @@ bitmap.o: bitmap.c
 	gcc -Wall -g -c bitmap.c -o bitmap.o
 
 mandelmovie.o: mandelmovie.c
-	gcc -g -c mandelmovie.c -o mandelmovie.o
+	gcc -Wall -g -c mandelmovie.c -o mandelmovie.o
 
 clean:
 	rm -f mandel.o bitmap.o mandel mandelmovie mandelmovie.o *.bmp *.mpg
